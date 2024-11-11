@@ -35,9 +35,6 @@ public class GrafanaConfigurationService {
 
     public void initializeGrafanaConfig() {
         try {
-            //createOrUpdateDataSource();
-            //createDashboardFolder();
-            //provisionDashboards();
             createDashboard(createDefaultDashboard("Application Metrics", List.of(
                     "requests_total",
                     "errors_total",
@@ -50,58 +47,6 @@ public class GrafanaConfigurationService {
         } catch (Exception e) {
             log.error("Failed to initialize Grafana configuration", e);
             throw new GrafanaConfigurationException("Grafana configuration failed", e);
-        }
-    }
-
-    @Retryable(maxAttempts = 3)
-    public void createOrUpdateDataSource() {
-        String url = grafanaConfig.getUrl() + "/api/datasources";
-        Map<String, Object> dataSource = createDataSourcePayload();
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(dataSource, createHeaders());
-
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    request,
-                    String.class
-            );
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("Data source created/updated successfully");
-            } else {
-                log.error("Failed to create/update data source: {}", response.getBody());
-                throw new GrafanaConfigurationException("Failed to create/update data source");
-            }
-        } catch (Exception e) {
-            log.error("Error creating/updating data source", e);
-            throw new GrafanaConfigurationException("Error creating/updating data source", e);
-        }
-    }
-
-    @Retryable(maxAttempts = 3)
-    public void createDashboardFolder() {
-        String url = grafanaConfig.getUrl() + "/api/folders";
-        Map<String, Object> folder = Map.of(
-                "title", grafanaConfig.getDashboard().getFolderName()
-        );
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(folder, createHeaders());
-
-        try {
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    request,
-                    Map.class
-            );
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("Dashboard folder created successfully");
-            }
-        } catch (Exception e) {
-            log.warn("Folder might already exist: {}", e.getMessage());
         }
     }
 
@@ -127,77 +72,11 @@ public class GrafanaConfigurationService {
         }
     }
 
-    @Retryable(maxAttempts = 3)
-    public void provisionDashboards() {
-        String url = grafanaConfig.getUrl() + "/api/dashboards/db";
-        List<Map<String, Object>> dashboards = dashboardProviderService.loadDashboards();
-
-        for (Map<String, Object> dashboard : dashboards) {
-            try {
-                Map<String, Object> payload = createDashboardPayload(dashboard);
-                HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, createHeaders());
-
-                ResponseEntity<String> response = restTemplate.exchange(
-                        url,
-                        HttpMethod.POST,
-                        request,
-                        String.class
-                );
-
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    log.info("Dashboard provisioned successfully: {}", dashboard.get("title"));
-                }
-            } catch (Exception e) {
-                log.error("Failed to provision dashboard: {}", dashboard.get("title"), e);
-            }
-        }
-    }
-
-    @Retryable(maxAttempts = 3)
-    public void setupAlertRules() {
-        String url = grafanaConfig.getUrl() + "/api/ruler/grafana/api/v1/rules";
-        List<AlertRule> alertRules = getAlertRules();
-
-        for (AlertRule alertRule : alertRules) {
-            try {
-                HttpEntity<AlertRule> request = new HttpEntity<>(alertRule, createHeaders());
-
-                ResponseEntity<String> response = restTemplate.exchange(
-                        url,
-                        HttpMethod.POST,
-                        request,
-                        String.class
-                );
-
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    log.info("Alert rule created successfully: {}", alertRule.getName());
-                }
-            } catch (Exception e) {
-                log.error("Failed to create alert rule: {}", alertRule.getName(), e);
-            }
-        }
-    }
-
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBasicAuth(grafanaConfig.getUsername(), grafanaConfig.getPassword());
         return headers;
-    }
-
-    private Map<String, Object> createDataSourcePayload() {
-        Map<String, Object> dataSource = new HashMap<>();
-        dataSource.put("name", "Prometheus");
-        dataSource.put("type", grafanaConfig.getDataSource().getType());
-        dataSource.put("url", grafanaConfig.getDataSource().getUrl());
-        dataSource.put("access", "proxy");
-        dataSource.put("isDefault", true);
-
-        if (grafanaConfig.getDataSource().isBasicAuth()) {
-            dataSource.put("basicAuth", true);
-        }
-
-        return dataSource;
     }
 
     public Map<String, Object> createDefaultDashboard(String applicationName, List<String> metrics) {
