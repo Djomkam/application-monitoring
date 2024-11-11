@@ -1,0 +1,20 @@
+[
+  {
+    "name": "High CPU Usage",
+    "metric": "system_cpu_usage",
+    "condition": "gt",
+    "threshold": "80",
+    "duration": "5m",
+    "severity": "critical",
+    "message": "CPU usage is above 80%"
+  },
+  {
+    "name": "High Memory Usage",
+    "metric": "jvm_memory_used_bytes",
+    "condition": "gt",
+    "threshold": "90",
+    "duration": "5m",
+    "severity": "warning",
+    "message": "Memory usage is above 90%"
+  }
+]

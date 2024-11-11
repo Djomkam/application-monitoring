@@ -1,0 +1,25 @@
+grafana:
+  url: ${GRAFANA_URL:http://localhost:3000}
+  username: ${GRAFANA_USERNAME:admin}
+  password: ${GRAFANA_PASSWORD:admin}
+  org-id: ${GRAFANA_ORG_ID:1}
+  data-source:
+    type: prometheus
+    url: ${PROMETHEUS_URL:http://localhost:9090}
+    basic-auth: true
+    basic-auth-user: ${PROMETHEUS_USER:admin}
+    basic-auth-password: ${PROMETHEUS_PASSWORD:admin}
+  dashboard:
+    folder-name: Application Dashboards
+    overwrite: true
+    timezone: browser
+  alert:
+    enabled: true
+    contact-point-name: default
+    evaluation-interval: 1m
+
+spring:
+  application:
+    name: monitoring-dashboard
+server:
+  port: 8081

@@ -1,0 +1,30 @@
+build/
+coverage/
+
+node_modules/
+.DS_Store
+.idea/
+*.iml
+*.pem
+*.zip
+*.ipr
+*.iws
+
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# *.pem
+# *.properties
+
+#intellij
+.idea/
+.mvn
+target/
+*.iml
+
+# Package Files #
+*.jar
+*.war
+*.ear
