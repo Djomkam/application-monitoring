@@ -1,3 +1,0 @@
-alerts:
-  rules-path: classpath:alert-rules.yml
-  alertmanager-url: http://localhost:9093
