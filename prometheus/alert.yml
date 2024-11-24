@@ -1,0 +1,50 @@
+groups:
+  - name: monitoring-metrics
+    rules:
+    # Test alert that will always fire
+    - alert: AlwaysFiring
+      expr: vector(1)
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Test alert - always firing"
+        description: "This is a test alert that always fires"
+
+    # High Request Count alert
+    - alert: HighRequestCount
+      expr: rate(app_requests_total[1m]) > 10
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High request count detected"
+        description: "Request count is {{ $value }} requests per second"
+
+    # Active Users alert
+    - alert: HighActiveUsers
+      expr: app_users_active > 80
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High number of active users"
+        description: "Active users count is {{ $value }}"
+
+    # High Processing Time alert
+    - alert: HighProcessingTime
+      expr: rate(app_processing_time_seconds_sum[1m]) / rate(app_processing_time_seconds_count[1m]) > 0.1
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High processing time detected"
+        description: "Average processing time is {{ $value }} seconds"
+
+    - alert: InstanceDownCritical
+      expr: up{job="services"} < 1
+      for: 1m
+      labels:
+        severity: high
+      annotations:
+        summary: 'Alert with high severity.'
